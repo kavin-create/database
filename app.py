@@ -64,34 +64,71 @@ def upload_user_data(user_data):
         local_file_path = "user_data.xlsx"
         user_data.to_excel(local_file_path, index=False)
 
+        # Read the updated user data from the local file
         with open(local_file_path, "rb") as file:
             content = base64.b64encode(file.read()).decode('utf-8')
 
+        # Get the branch's last commit information
         branch = "main"  # Change this to your branch name if different
         last_commit_info = get_last_commit_info(GITHUB_REPO_OWNER, GITHUB_REPO_NAME, branch)
 
-        url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/git/commits'
+        # Define the GitHub API URL for creating a new blob
+        blob_url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/git/blobs'
 
+        # Set up headers with authorization and content type
         headers = {
             'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
             'Content-Type': 'application/json',
         }
 
+        # Prepare the data payload for the GitHub API
         data = {
-            'message': 'Update user_data.xlsx',
             'content': content,
-            'sha': last_commit_info['sha'],
-            'tree': last_commit_info['commit']['tree']['sha'],
-            'parents': [last_commit_info['sha']]
+            'encoding': 'base64',
         }
 
-        print("Sending data to GitHub API...")
-        response = requests.post(url, headers=headers, data=json.dumps(data))
+        # Send a POST request to create a new blob on GitHub
+        response = requests.post(blob_url, headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+        blob_info = response.json()
+
+        # Define the GitHub API URL for creating a new tree
+        tree_url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/git/trees'
+
+        # Prepare the data payload for the GitHub API
+        tree_data = {
+            'base_tree': last_commit_info['commit']['tree']['sha'],
+            'tree': [
+                {
+                    'path': 'user_data.xlsx',
+                    'mode': '100644',
+                    'type': 'blob',
+                    'sha': blob_info['sha'],
+                }
+            ],
+        }
+
+        # Send a POST request to create a new tree on GitHub
+        response = requests.post(tree_url, headers=headers, data=json.dumps(tree_data))
+        response.raise_for_status()
+        tree_info = response.json()
+
+        # Define the GitHub API URL for creating a new commit
+        commit_url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/git/commits'
+
+        # Prepare the data payload for the GitHub API
+        commit_data = {
+            'message': 'Update user_data.xlsx',
+            'tree': tree_info['sha'],
+            'parents': [last_commit_info['sha']],
+        }
+
+        # Send a POST request to create a new commit on GitHub
+        response = requests.post(commit_url, headers=headers, data=json.dumps(commit_data))
         response.raise_for_status()
         new_commit_info = response.json()
 
-        print("GitHub API response:", new_commit_info)
-
+        # Update the reference (branch) to point to the new commit
         update_branch_reference(GITHUB_REPO_OWNER, GITHUB_REPO_NAME, branch, new_commit_info['sha'])
 
         print("File uploaded successfully.")
