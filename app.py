@@ -21,8 +21,8 @@ def initialize_user_data():
         response.raise_for_status()
         user_data = pd.read_excel(BytesIO(response.content))
 
-        # Explicitly convert 'PageID' column to int, ignoring non-numeric values
-        user_data['PageID'] = pd.to_numeric(user_data['PageID'], errors='coerce')
+        # If 'PageID' column contains both numeric and non-numeric values, keep it as an object (string)
+        user_data['PageID'] = user_data['PageID'].astype(str)
 
         if not isinstance(user_data, pd.DataFrame):
             raise ValueError("Invalid data loaded. Expected a DataFrame.")
