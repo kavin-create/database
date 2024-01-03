@@ -38,7 +38,7 @@ def new_user_login(username, password, pageid, access_token):
         print("Error: user_data is not a DataFrame.")
         user_data = pd.DataFrame(columns=['Username', 'Password', 'PageID', 'AccessToken'])
     
-    user_data = user_data.append(new_entry, ignore_index=True)
+    user_data = user_data.concat(new_entry, ignore_index=True)
     print("Type of user_data after append:", type(user_data))
     print("Contents of user_data after append:", user_data)
     
