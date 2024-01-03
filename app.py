@@ -60,10 +60,11 @@ def new_user_login(username, password, pageid, access_token):
 def upload_user_data(user_data):
     try:
         # Save the updated user data to the local file
-        user_data.to_excel("user_data.xlsx", index=False)
+        local_file_path = "user_data.xlsx"
+        user_data.to_excel(local_file_path, index=False)
 
         # Read the updated user data from the local file
-        with open("user_data.xlsx", "rb") as file:
+        with open(local_file_path, "rb") as file:
             content = base64.b64encode(file.read()).decode('utf-8')
 
         # Define the GitHub API URL for updating the file
@@ -78,7 +79,8 @@ def upload_user_data(user_data):
         # Prepare the data payload for the GitHub API
         data = {
             'message': 'Update user_data.xlsx',
-            'content': content
+            'content': content,
+            'sha': get_file_sha(GITHUB_REPO_OWNER, GITHUB_REPO_NAME, "user_data.xlsx")
         }
 
         # Send a PUT request to update the file on GitHub
@@ -89,6 +91,17 @@ def upload_user_data(user_data):
         print(f"HTTP error occurred: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
+# Function to get the SHA of a file on GitHub
+def get_file_sha(owner, repo, file_path):
+    url = f'https://api.github.com/repos/{owner}/{repo}/contents/{file_path}'
+    headers = {
+        'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
+        'Accept': 'application/vnd.github.v3+json',
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()['sha']
 
 # Streamlit app
 def main():
