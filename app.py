@@ -3,11 +3,14 @@ import pandas as pd
 import requests
 from io import BytesIO
 import base64
+import os
 
+
+access = os.environ.get("KEY")
 # GitHub repository information
 GITHUB_REPO_OWNER = "kavin-create"
 GITHUB_REPO_NAME = "database"
-GITHUB_ACCESS_TOKEN = KEY # Make sure to keep this secure
+GITHUB_ACCESS_TOKEN = access # Make sure to keep this secure
 
 # Function to create or load the user data Excel file
 def initialize_user_data():
