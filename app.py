@@ -61,28 +61,22 @@ def new_user_login(username, password, pageid, access_token):
 # Function to upload user data to GitHub
 def upload_user_data(user_data):
     try:
-        # Save the updated user data to the local file
         local_file_path = "user_data.xlsx"
         user_data.to_excel(local_file_path, index=False)
 
-        # Read the updated user data from the local file
         with open(local_file_path, "rb") as file:
             content = base64.b64encode(file.read()).decode('utf-8')
 
-        # Get the branch's last commit information
         branch = "main"  # Change this to your branch name if different
         last_commit_info = get_last_commit_info(GITHUB_REPO_OWNER, GITHUB_REPO_NAME, branch)
 
-        # Define the GitHub API URL for creating a new commit
         url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/git/commits'
 
-        # Set up headers with authorization and content type
         headers = {
             'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
             'Content-Type': 'application/json',
         }
 
-        # Prepare the data payload for the GitHub API
         data = {
             'message': 'Update user_data.xlsx',
             'content': content,
@@ -91,12 +85,13 @@ def upload_user_data(user_data):
             'parents': [last_commit_info['sha']]
         }
 
-        # Send a POST request to create a new commit on GitHub
+        print("Sending data to GitHub API...")
         response = requests.post(url, headers=headers, data=json.dumps(data))
         response.raise_for_status()
         new_commit_info = response.json()
 
-        # Update the reference (branch) to point to the new commit
+        print("GitHub API response:", new_commit_info)
+
         update_branch_reference(GITHUB_REPO_OWNER, GITHUB_REPO_NAME, branch, new_commit_info['sha'])
 
         print("File uploaded successfully.")
@@ -104,6 +99,7 @@ def upload_user_data(user_data):
         print(f"HTTP error occurred: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
 
 # Function to get the information of the last commit on a branch
 def get_last_commit_info(owner, repo, branch):
