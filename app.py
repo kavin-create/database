@@ -6,7 +6,7 @@ import base64
 # GitHub repository information
 GITHUB_REPO_OWNER = "kavin-create"
 GITHUB_REPO_NAME = "database"
-GITHUB_ACCESS_TOKEN = "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"  # Make sure to keep this secure
+GITHUB_ACCESS_TOKEN = "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"  # Make sure to keep this secure
 
 # Function to create or load the user data Excel file
 def initialize_user_data():
