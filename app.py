@@ -74,8 +74,7 @@ def upload_user_data(user_data):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-# Call the function
-upload_user_data(your_user_data_dataframe)
+
 
 # Function to handle login for existing user
 def existing_user_login(username):
