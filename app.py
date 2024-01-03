@@ -52,21 +52,30 @@ def new_user_login(username, password, pageid, access_token):
 
 # Function to upload user data to GitHub
 def upload_user_data(user_data):
-    user_data.to_excel("user_data.xlsx", index=False)
-    with open("user_data.xlsx", "rb") as file:
-        content = base64.b64encode(file.read()).decode('utf-8')
+    try:
+        user_data.to_excel("user_data.xlsx", index=False)
+        with open("user_data.xlsx", "rb") as file:
+            content = base64.b64encode(file.read()).decode('utf-8')
 
-    url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/contents/user_data.xlsx'
-    headers = {
-        'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
-        'Content-Type': 'application/json',
-    }
-    data = {
-        'message': 'Update user_data.xlsx',
-        'content': content
-    }
-    response = requests.put(url, headers=headers, json=data)
-    response.raise_for_status()
+        url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/contents/user_data.xlsx'
+        headers = {
+            'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
+            'Content-Type': 'application/json',
+        }
+        data = {
+            'message': 'Update user_data.xlsx',
+            'content': content
+        }
+        response = requests.put(url, headers=headers, json=data)
+        response.raise_for_status()
+        print("File uploaded successfully.")
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP error occurred: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+# Call the function
+upload_user_data(your_user_data_dataframe)
 
 # Function to handle login for existing user
 def existing_user_login(username):
