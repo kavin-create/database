@@ -36,8 +36,8 @@ def initialize_user_data():
 
 def new_user_login(username, password, pageid, access_token):
     user_data = initialize_user_data()
-    st.write("Type of user_data before append:", type(user_data))
-    st.write("Contents of user_data before append:", user_data)
+    #st.write("Type of user_data before append:", type(user_data))
+    #st.write("Contents of user_data before append:", user_data)
 
     new_entry = pd.DataFrame([[username, password, pageid, access_token]],
                              columns=['Username', 'Password', 'PageID', 'AccessToken'])
