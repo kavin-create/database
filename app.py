@@ -36,7 +36,7 @@ def initialize_user_data():
 
 def new_user_login(username, password, pageid, access_token):
     user_data = initialize_user_data()
-    st.write("Type of user_data before append:", type(user_data))
+    #st.write("Type of user_data before append:", type(user_data))
     st.write("Contents of user_data before append:", user_data)
 
     last_index = user_data.index.max()  # Get the index of the last row
@@ -94,7 +94,6 @@ def upload_user_data(user_data):
         print(f"HTTP error occurred: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
-
 
 # Function to handle login for existing user
 def existing_user_login(username):
