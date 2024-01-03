@@ -4,6 +4,8 @@ import requests
 from io import BytesIO
 import base64
 import os
+import json
+import hashlib
 
 # Load GitHub access token from environment variable
 GITHUB_ACCESS_TOKEN = os.environ.get("KEY")
@@ -67,12 +69,12 @@ def upload_user_data(user_data):
         with open(local_file_path, "rb") as file:
             content = base64.b64encode(file.read()).decode('utf-8')
 
-        # Get the branch's last commit SHA
+        # Get the branch's last commit information
         branch = "main"  # Change this to your branch name if different
-        last_commit_sha = get_last_commit_sha(GITHUB_REPO_OWNER, GITHUB_REPO_NAME, branch)
+        last_commit_info = get_last_commit_info(GITHUB_REPO_OWNER, GITHUB_REPO_NAME, branch)
 
-        # Define the GitHub API URL for updating the file
-        url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/contents/user_data.xlsx'
+        # Define the GitHub API URL for creating a new commit
+        url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/git/commits'
 
         # Set up headers with authorization and content type
         headers = {
@@ -84,17 +86,49 @@ def upload_user_data(user_data):
         data = {
             'message': 'Update user_data.xlsx',
             'content': content,
-            'sha': last_commit_sha
+            'sha': last_commit_info['sha'],
+            'tree': last_commit_info['commit']['tree']['sha'],
+            'parents': [last_commit_info['sha']]
         }
 
-        # Send a PUT request to update the file on GitHub
-        response = requests.put(url, headers=headers, json=data)
+        # Send a POST request to create a new commit on GitHub
+        response = requests.post(url, headers=headers, data=json.dumps(data))
         response.raise_for_status()
+        new_commit_info = response.json()
+
+        # Update the reference (branch) to point to the new commit
+        update_branch_reference(GITHUB_REPO_OWNER, GITHUB_REPO_NAME, branch, new_commit_info['sha'])
+
         print("File uploaded successfully.")
     except requests.exceptions.HTTPError as e:
         print(f"HTTP error occurred: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
+# Function to get the information of the last commit on a branch
+def get_last_commit_info(owner, repo, branch):
+    url = f'https://api.github.com/repos/{owner}/{repo}/commits/{branch}'
+    headers = {
+        'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
+        'Accept': 'application/vnd.github.v3+json',
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+# Function to update the branch reference to a new commit
+def update_branch_reference(owner, repo, branch, commit_sha):
+    url = f'https://api.github.com/repos/{owner}/{repo}/git/refs/heads/{branch}'
+    headers = {
+        'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
+        'Content-Type': 'application/json',
+    }
+    data = {
+        'sha': commit_sha,
+        'force': True  # Required to force-update the branch reference
+    }
+    response = requests.patch(url, headers=headers, data=json.dumps(data))
+    response.raise_for_status()
 
 # Function to get the SHA of the last commit on a branch
 def get_last_commit_sha(owner, repo, branch):
