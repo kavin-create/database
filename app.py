@@ -36,18 +36,21 @@ def initialize_user_data():
 
 def new_user_login(username, password, pageid, access_token):
     user_data = initialize_user_data()
-    #st.write("Type of user_data before append:", type(user_data))
-    #st.write("Contents of user_data before append:", user_data)
+    st.write("Type of user_data before append:", type(user_data))
+    st.write("Contents of user_data before append:", user_data)
 
+    last_index = user_data.index.max()  # Get the index of the last row
     new_entry = pd.DataFrame([[username, password, pageid, access_token]],
                              columns=['Username', 'Password', 'PageID', 'AccessToken'])
 
-    if not isinstance(user_data, pd.DataFrame):
-        st.write("Error: user_data is not a DataFrame.")
-        user_data = pd.DataFrame(columns=['Username', 'Password', 'PageID', 'AccessToken'])
+    if pd.isna(last_index):
+        # If the DataFrame is empty, set the index to 0
+        new_entry.index = [0]
+    else:
+        new_entry.index = [last_index + 1]  # Increment the index for the new entry
 
     # Concatenate the new entry to the original DataFrame
-    user_data = pd.concat([user_data, new_entry], ignore_index=True)
+    user_data = pd.concat([user_data, new_entry])
 
     # Ensure 'PageID' column is of type object (string)
     user_data['PageID'] = user_data['PageID'].astype(str)
