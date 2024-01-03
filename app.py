@@ -64,19 +64,29 @@ def new_user_login(username, password, pageid, access_token):
 # Function to upload user data to GitHub
 def upload_user_data(user_data):
     try:
+        # Save the updated user data to the local file
         user_data.to_excel("user_data.xlsx", index=False)
+
+        # Read the updated user data from the local file
         with open("user_data.xlsx", "rb") as file:
             content = base64.b64encode(file.read()).decode('utf-8')
 
+        # Define the GitHub API URL for updating the file
         url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/contents/user_data.xlsx'
+
+        # Set up headers with authorization and content type
         headers = {
             'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
             'Content-Type': 'application/json',
         }
+
+        # Prepare the data payload for the GitHub API
         data = {
             'message': 'Update user_data.xlsx',
             'content': content
         }
+
+        # Send a PUT request to update the file on GitHub
         response = requests.put(url, headers=headers, json=data)
         response.raise_for_status()
         print("File uploaded successfully.")
@@ -84,6 +94,7 @@ def upload_user_data(user_data):
         print(f"HTTP error occurred: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
 
 # Function to handle login for existing user
 def existing_user_login(username):
