@@ -16,14 +16,14 @@ def initialize_user_data():
         response = requests.get(url)
         response.raise_for_status()
         user_data = pd.read_excel(BytesIO(response.content))
-    except (requests.RequestException, pd.errors.EmptyDataError):
+        if not isinstance(user_data, pd.DataFrame):
+            raise ValueError("Invalid data loaded. Expected a DataFrame.")
+    except (requests.RequestException, pd.errors.EmptyDataError, ValueError) as e:
+        print(f"An error occurred while initializing user_data: {e}")
         columns = ['Username', 'Password', 'PageID', 'AccessToken']
         user_data = pd.DataFrame(columns=columns)
         upload_user_data(user_data)
-    except Exception as e:
-        print(f"An error occurred while initializing user_data: {e}")
-        user_data = pd.DataFrame(columns=['Username', 'Password', 'PageID', 'AccessToken'])
-    
+
     return user_data
 
 def new_user_login(username, password, pageid, access_token):
@@ -34,12 +34,17 @@ def new_user_login(username, password, pageid, access_token):
     new_entry = pd.DataFrame([[username, password, pageid, access_token]],
                              columns=['Username', 'Password', 'PageID', 'AccessToken'])
     
+    if not isinstance(user_data, pd.DataFrame):
+        print("Error: user_data is not a DataFrame.")
+        user_data = pd.DataFrame(columns=['Username', 'Password', 'PageID', 'AccessToken'])
+    
     user_data = user_data.append(new_entry, ignore_index=True)
     print("Type of user_data after append:", type(user_data))
     print("Contents of user_data after append:", user_data)
     
     upload_user_data(user_data)
     return user_data
+
 
 # Function to upload user data to GitHub
 def upload_user_data(user_data):
