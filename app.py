@@ -95,6 +95,7 @@ def upload_user_data(user_data):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
+
 # Function to handle login for existing user
 def existing_user_login(username):
     user_data = initialize_user_data()
