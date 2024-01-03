@@ -17,9 +17,14 @@ def initialize_user_data():
         response.raise_for_status()
         user_data = pd.read_excel(BytesIO(response.content))
     except (requests.RequestException, pd.errors.EmptyDataError):
+        # If an error occurs or no data is found, return an empty DataFrame
         columns = ['Username', 'Password', 'PageID', 'AccessToken']
         user_data = pd.DataFrame(columns=columns)
         upload_user_data(user_data)
+    except Exception as e:
+        # Print the exception to help diagnose the issue
+        print(f"An error occurred while initializing user_data: {e}")
+        user_data = pd.DataFrame(columns=['Username', 'Password', 'PageID', 'AccessToken'])
     
     return user_data
 
