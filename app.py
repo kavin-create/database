@@ -38,9 +38,17 @@ def initialize_user_data():
 def new_user_login(username, password, pageid, access_token):
     user_data = initialize_user_data()
 
+    # Check if the username already exists
+    if username in user_data['Username'].values:
+        st.error("Username already exists. Choose a different username.")
+        return user_data
+
+    # Get the index of the available row
+    index_point = user_data.index.max() + 1 if not user_data.empty else 0
+
     # Collect new user information (replace this with your actual data collection code)
     new_entry = pd.DataFrame([[username, password, pageid, access_token]],
-                             columns=['Username', 'Password', 'PageID', 'AccessToken'])
+                             columns=['Username', 'Password', 'PageID', 'AccessToken'], index=[index_point])
 
     # Concatenate the new entry to the original DataFrame
     user_data = pd.concat([user_data, new_entry])
