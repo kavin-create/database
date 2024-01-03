@@ -20,6 +20,7 @@ def initialize_user_data():
         columns = ['Username', 'Password', 'PageID', 'AccessToken']
         user_data = pd.DataFrame(columns=columns)
         upload_user_data(user_data)
+    
     return user_data
 
 # Function to upload user data to GitHub
