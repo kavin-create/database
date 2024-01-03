@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 from io import BytesIO
 import base64
+
 # GitHub repository information
 GITHUB_REPO_OWNER = "kavin-create"
 GITHUB_REPO_NAME = "database"
@@ -28,32 +29,30 @@ def initialize_user_data():
 
 def new_user_login(username, password, pageid, access_token):
     user_data = initialize_user_data()
-    print("Type of user_data before append:", type(user_data))
-    print("Contents of user_data before append:", user_data)
-    
+    st.write("Type of user_data before append:", type(user_data))
+    st.write("Contents of user_data before append:", user_data)
+
     new_entry = pd.DataFrame([[username, password, pageid, access_token]],
                              columns=['Username', 'Password', 'PageID', 'AccessToken'])
-    
+
     if not isinstance(user_data, pd.DataFrame):
-        print("Error: user_data is not a DataFrame.")
+        st.write("Error: user_data is not a DataFrame.")
         user_data = pd.DataFrame(columns=['Username', 'Password', 'PageID', 'AccessToken'])
-    
+
     # Concatenate the new entry to the original DataFrame
     user_data = pd.concat([user_data, new_entry], ignore_index=True)
-    print("Type of user_data after append:", type(user_data))
-    print("Contents of user_data after append:", user_data)
-    
+    st.write("Type of user_data after append:", type(user_data))
+    st.write("Contents of user_data after append:", user_data)
+
     upload_user_data(user_data)
     return user_data
-
-
 
 # Function to upload user data to GitHub
 def upload_user_data(user_data):
     user_data.to_excel("user_data.xlsx", index=False)
     with open("user_data.xlsx", "rb") as file:
         content = base64.b64encode(file.read()).decode('utf-8')
-    
+
     url = f'https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/contents/user_data.xlsx'
     headers = {
         'Authorization': f'Bearer {GITHUB_ACCESS_TOKEN}',
@@ -65,15 +64,6 @@ def upload_user_data(user_data):
     }
     response = requests.put(url, headers=headers, json=data)
     response.raise_for_status()
-
-# Function to handle login for new user
-#def new_user_login(username, password, pageid, access_token):
-#    user_data = initialize_user_data()
-#    new_entry = pd.DataFrame([[username, password, pageid, access_token]],
-#                             columns=['Username', 'Password', 'PageID', 'AccessToken'])
-#    user_data = user_data.append(new_entry, ignore_index=True)
-#    upload_user_data(user_data)
-#    return user_data
 
 # Function to handle login for existing user
 def existing_user_login(username):
