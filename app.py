@@ -5,7 +5,6 @@ from io import BytesIO
 import base64
 import os
 import json
-import hashlib
 
 # Load GitHub access token from environment variable
 GITHUB_ACCESS_TOKEN = os.environ.get("KEY")
@@ -137,7 +136,6 @@ def upload_user_data(user_data):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-
 # Function to get the information of the last commit on a branch
 def get_last_commit_info(owner, repo, branch):
     url = f'https://api.github.com/repos/{owner}/{repo}/commits/{branch}'
@@ -173,7 +171,6 @@ def get_last_commit_sha(owner, repo, branch):
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     return response.json()['sha']
-
 
 # Function to get the SHA of a file on GitHub
 def get_file_sha(owner, repo, file_path):
