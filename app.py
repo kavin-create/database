@@ -36,18 +36,10 @@ def initialize_user_data():
 
 def new_user_login(username, password, pageid, access_token):
     user_data = initialize_user_data()
-    #st.write("Type of user_data before append:", type(user_data))
-    st.write("Contents of user_data before append:", user_data)
 
-    last_index = user_data.index.max()  # Get the index of the last row
+    # Collect new user information (replace this with your actual data collection code)
     new_entry = pd.DataFrame([[username, password, pageid, access_token]],
                              columns=['Username', 'Password', 'PageID', 'AccessToken'])
-
-    if pd.isna(last_index):
-        # If the DataFrame is empty, set the index to 0
-        new_entry.index = [0]
-    else:
-        new_entry.index = [last_index + 1]  # Increment the index for the new entry
 
     # Concatenate the new entry to the original DataFrame
     user_data = pd.concat([user_data, new_entry])
@@ -55,10 +47,13 @@ def new_user_login(username, password, pageid, access_token):
     # Ensure 'PageID' column is of type object (string)
     user_data['PageID'] = user_data['PageID'].astype(str)
 
+    # Save the updated user data to the Excel file and upload to GitHub
+    upload_user_data(user_data)
+
     st.write("Type of user_data after append:", type(user_data))
     st.write("Contents of user_data after append:", user_data)
+    st.success("Login successful! Data saved.")
 
-    upload_user_data(user_data)
     return user_data
 
 # Function to upload user data to GitHub
@@ -95,19 +90,6 @@ def upload_user_data(user_data):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-
-# Function to handle login for existing user
-def existing_user_login(username):
-    user_data = initialize_user_data()
-    user_row = user_data[user_data['Username'] == username]
-    if not user_row.empty:
-        password = user_row.iloc[0]['Password']
-        pageid = user_row.iloc[0]['PageID']
-        access_token = user_row.iloc[0]['AccessToken']
-        return password, pageid, access_token
-    else:
-        st.error("User not found. Please check the username.")
-
 # Streamlit app
 def main():
     st.title("GitHub Integrated Facebook Login App")
@@ -128,7 +110,6 @@ def main():
         # Login button
         if st.button("Login"):
             user_data = new_user_login(username, password, pageid, access_token)
-            st.success("Login successful! Data saved.")
 
     # Existing user login
     elif user_type == 'Existing User':
