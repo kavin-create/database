@@ -38,12 +38,14 @@ def new_user_login(username, password, pageid, access_token):
         print("Error: user_data is not a DataFrame.")
         user_data = pd.DataFrame(columns=['Username', 'Password', 'PageID', 'AccessToken'])
     
-    user_data = user_data.concat(new_entry, ignore_index=True)
+    # Concatenate the new entry to the original DataFrame
+    user_data = pd.concat([user_data, new_entry], ignore_index=True)
     print("Type of user_data after append:", type(user_data))
     print("Contents of user_data after append:", user_data)
     
     upload_user_data(user_data)
     return user_data
+
 
 
 # Function to upload user data to GitHub
